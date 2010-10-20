@@ -389,7 +389,8 @@ You can now access the Cach&#233; system from Node.js, eg:
 
 You should see something like:
 
-      {"Build":"Build 6 Beta","Date":"15 October 2010","Host":"Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST"}
+      Build = Build 6 Beta; date=15 October 2010; zv=Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST
+
 
 	
 
