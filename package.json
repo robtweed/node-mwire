@@ -1,0 +1,16 @@
+{ "name" : "node-mdbm"
+, "description" : "Client for accessing GT.M and Cache Globals (via secured HTTP)"
+, "version" : "0.0.8"
+, "author" : "Rob Tweed <rtweed@mgateway.com>"
+, "repository" :
+  { "type" : "git"
+  , "url" : "git://github.com/robtweed/node-mdbm.git"
+  }
+, "bugs" : { "web" : "http://github.com/robtweed/node-mdbm/issues" }
+, "os" : [ "linux", "darwin" ]
+, "directories" : { "lib" : "./lib/" }
+, "main" : "./lib/mdbMumpsClient"
+, "engines" : { "node" : ">=0.2.2" }
+, "dependencies" : {}
+, "licenses": [ "MIT" ]
+}
