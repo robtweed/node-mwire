@@ -39,7 +39,7 @@ In order to use *node-mwire* you'll need to have a have a Cach&#233; system or a
 
 I've provided specific instructions for Cach&#233; at the end of this README file.  If you'd prefer to use the Free Open Source GT.M database, read on:
 
-The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  You can optionally also use his Node.js installer to add Node.js and the node-mdbm and node-mwire to the same server.  Node.js and node-mdm can reside on the same server as GT.M or on a different server, but using Mike's installer is a quick and painless way to get a complete test environment on the one server.
+The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  You can optionally also use his Node.js installer to add Node.js, redis-node and node-mwire to the same server.  Node.js and node-mwire can reside on the same server as GT.M or on a different server, but Mike's installer is a quick and painless way to get a complete test environment up and running on the one server.
 
 You can apply Mike's installer to a Ubuntu Linux system running on your own hardware, or running as a virtual machine.  However, I find Amazon EC2 servers to be ideal for trying this kind of stuff out.  I've tested it with both Ubuntu 10.4 and 10.10.
 
