@@ -11,10 +11,14 @@ Twitter: @rtweed
 
 Google Group for discussions, support, advice etc: [http://groups.google.co.uk/group/mdb-community-forum](http://groups.google.co.uk/group/mdb-community-forum)
 
-## Installing node-mdwire
+## Installing node-mwire
 
        npm install node-mwire
 
+You must also install redis-node:
+
+       npm install redis-node
+	   
 		
 ##  GT.M and Cach&#233; Globals?
 
