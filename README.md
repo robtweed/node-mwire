@@ -363,7 +363,7 @@ The node-mwire client can be used with a Cach&#233; database
 
 On the client system you need to install *Node.js*, the *redis-node* client and the *node-mwire* extension as described earlier.
 
-On the Cache back-end system, you need to do the following:
+On the Cach&#233; back-end system, you need to do the following:
 
 - install EWD for Cach&#233; (build 827 or later): [http://www.mgateway.com/ewd.html](http://www.mgateway.com/ewd.html)
 
@@ -371,7 +371,7 @@ On the Cache back-end system, you need to do the following:
 
 - you'll find a directory named */cache* in the **robtweed/mdb** repository and inside it is a file named **mdb.xml**.  Use $system.OBJ.Load(filePath) to install the M/DB and M/Wire routines that it contains into your working namespace (eg USER)
 	
-By default, M/Wire will run on port 6330.  On Cache systems, remote access to the M/Wire protocol is controlled by a daemon process.  To start this:
+By default, M/Wire will run on port 6330.  On Cach&#233; systems, remote access to the M/Wire protocol is controlled by a daemon process.  To start this:
 
      job start^zmwireDaemon
 	 
