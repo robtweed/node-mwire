@@ -33,7 +33,7 @@ I've developed *node-mwire* to make it possible for the growing Node.js communit
 
 ##  Installing the Global-based back-end System
 
-In order to use *node-mdbm* you'll need to have a have a Cach&#233; system or a Linux system with GT.M installed.  You'll also need to install the following on the GT.M or Cach&#233; system:
+In order to use *node-mwire* you'll need to have a have a Cach&#233; system or a Linux system with GT.M installed.  You'll also need to install the following on the GT.M or Cach&#233; system:
 
 - M/Wire routines (latest versions from the repository: *robtweed/mdb*)
 
