@@ -1,8 +1,8 @@
-# node-mdbm
+# node-mwire
  
-node.js client for accessing GT.M and Cach&#233; Globals (via secured HTTP)
+node.js client for accessing GT.M and Cach&#233; Globals (via adapted Redis wire protocol)
 
-Inspired by node-apac (thanks to Dustin McQuay [dmcquay])
+Thanks to Brian Noguchi for advice on extending his redis-node client
 
 Rob Tweed <rtweed@mgateway.com>  
 29 September 2010, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
@@ -11,9 +11,9 @@ Twitter: @rtweed
 
 Google Group for discussions, support, advice etc: [http://groups.google.co.uk/group/mdb-community-forum](http://groups.google.co.uk/group/mdb-community-forum)
 
-## Installing node-mdbm
+## Installing node-mdwire
 
-       npm install node-mdbm
+       npm install node-mwire
 
 		
 ##  GT.M and Cach&#233; Globals?
@@ -24,146 +24,79 @@ For more background on Globals, you should read [http://www.mgateway.com/docs/un
 
 GT.M is a particularly attractive option as it is available as a Free Open Source version.
 
-I've developed *node-mbdm* to make it possible for the growing Node.js community to benefit from the great flexibility and performance that these Global-based databases provide. The combination of Node.js and Globals is truly remarkable, and I'm hoping node-mdm will result in them becoming much better known for NoSQL database storage.
+I've developed *node-mwire* to make it possible for the growing Node.js community to benefit from the great flexibility and performance that these Global-based databases provide. The combination of Node.js and Globals is truly remarkable, and I'm hoping node-mwire will result in them becoming much better known for NoSQL database storage.
 
 
 ##  Installing the Global-based back-end System
 
 In order to use *node-mdbm* you'll need to have a have a Cach&#233; system or a Linux system with GT.M installed.  You'll also need to install the following on the GT.M or Cach&#233; system:
 
-- M/DB (latest version from the repository: *robtweed/mdb*)
-- M/DB:Mumps (latest version from the repository: *robtweed/mdb*)
-- EWD (latest version from the respository: *robtweed/EWD*)
-- Apache and our *m_apache* gateway.
+- M/Wire routines (latest versions from the repository: *robtweed/mdb*)
 
 I've provided specific instructions for Cach&#233; at the end of this README file.  If you'd prefer to use the Free Open Source GT.M database, read on:
 
-The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  You'll then just need to update M/DB, M/DB:Mumps and EWD and you'll have a GT.M database server that's ready for use with Node.js and node-mdbm.  Node.js and node-mdm can reside on the same server as GT.M or on a different server.
-
-The instructions below assume you'll be installing Node.js and node-mdbm on the same server.
+The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  You can optionally also use his Node.js installer to add Node.js and the node-mdbm and node-mwire to the same server.  Node.js and node-mdm can reside on the same server as GT.M or on a different server, but using Mike's installer is a quick and painless way to get a complete test environment on the one server.
 
 You can apply Mike's installer to a Ubuntu Linux system running on your own hardware, or running as a virtual machine.  However, I find Amazon EC2 servers to be ideal for trying this kind of stuff out.  I've tested it with both Ubuntu 10.4 and 10.10.
 
 So, for example, to create an M/DB Appliance using Amazon EC2:
 
-- Start up a Ubuntu Lucid (10.04) instance, eg use ami-6c06f305 and, to keep costs down, select a t1.micro instance
+- Start up a Ubuntu Lucid (10.04) instance, eg use ami-6c06f305
 - Now follow the instructions for installing the M/DB Appliance at [http://gradvs1.mgateway.com/main/index.html?path=mdb/mdbDownload](http://gradvs1.mgateway.com/main/index.html?path=mdb/mdbDownload)
 
-If you point a browser at the domain name/IP address assigned to the Ubuntu machine, you should now get the M/DB welcome screen.  **You'll need to initialise M/DB before you can use node-mdbm**.  Follow the instructions that you'll see in your browser for creating the */usr/MDB/MDB.conf* file and initialising M/DB.
+Now install Node.js, node-mdbm, redis-node and node-mwire:
 
-The M/DB system should now be working.  In order to enable it for use with Node.js and node-mdbm, you'll need to upgrade MDB.m, MDBMumps.m and EWD as follows:
-
-- Install git - we'll be needing this to fetch the various resources we need.  Here I've created a new directory */git* which is where I'll put all the respositories I download, but you can use whatever directory you wish:
-
-       sudo apt-get install git-core
-       cd /
-       sudo mkdir git
-	   sudo chmod 777 git
-       cd git
-
-- Update M/DB and M/DB:Mumps
-
-	   git clone git://github.com/robtweed/mdb.git
-    
-  Then copy all the files with *.m* file extensions from */usr/git/mdb* to */usr/local/gtm/ewd*, overwriting the original versions.
-
-	    cp /git/mdb/MDB*.m /usr/local/gtm/ewd
-
-- Update the EWD routines.  These provide M/DB:Mumps and M/DB with a variety of utility functions, eg for JSON processing
-
-	   git clone git://github.com/robtweed/EWD.git
-    
-  Then copy the routine files from */usr/git/EWD* to */usr/local/gtm/ewd*, overwriting the original versions.
-
-	    cp /git/EWD/*.m /usr/local/gtm/ewd
-	   
-At this point you have a GT.M-based Mumps server that is ready to access from a Node.js system via HTTP.
-
-If you want to make a completely self-contained test system that also includes Node.js and node-mdbm, then continue as follows:
-	      
-- Install node.js:
-
-       sudo apt-get install g++ curl openssl libssl-dev apache2-utils
-       git clone git://github.com/ry/node.git
-       cd node
-       ./configure
-       make
-       sudo make install
-
-  Test it by running *node -v*.  If everything is installed and working correctly you'll see:
-  
-        $ node -v  
-        v0.3.0-pre
-
-  
-- Install npm (Node.js Package manager)
-
-        cd /git
-		sudo chown -R $USER /usr/local
-		curl http://npmjs.org/install.sh | sh
+      cd /tmp
+      wget http://michaelgclayton.s3.amazonaws.com/mgwtools/node-mdbm-1.10_all.deb (Fetch the installer file)
+      sudo node-mdbm-1.10_all.deb (Ignore the errors that will be reported)
+      sudo apt-get -f install (and type y when asked)
+	  
+Note - the Node.js build process can take quite a long time and is very verbose.
 	
-	Now install npm
-
-        npm install node-mdbm
-	
-OK! That's it all installed. You should now be ready to try out node-mdbm!
+OK! That's it all installed. You should now be ready to try out node-mwire!
 
 ## Testing node-mdbm
 
+If you used Mike Clayton's installers as described above:
+
   In */usr/local/gtm/ewd* create a file named *test1.js* containing:
   
-    var mdbmif = require("node-mdbm");
-    var mdbm = new mdbmif.Client({
-       mdbId:'<yourId>',
-       mdbSecret:'<your secret key>',
-       endPoint: '127.0.0.1'
-    });
-    mdbm.version( 
-       function(error, results) {
-          if (error) { 
-             console.log('Error: ' + error + "\n");
-             console.log(results.ErrorCode + ": " + results.ErrorMessage + "\n"); 
-          }
-          else {
-            console.log(results.Name + "\n" + results.Build + "\n" + results.Date + "\n");
-          }
-       }
-    );
+    var redis = require("redis-node");
+    var client = redis.createClient(6330);
+    require("mwire").addCommands(client);
 	
-**Replace the *mdbId* and *mdbSecret* values with the ones you used in the MDB.conf file that initialised the M/DB Appliance**
+    client.version(function (err, json) {
+      if (err) throw err;
+       console.log("Build = " + json.Build + "; date=" + json.Date + "; zv=" + json.Host);
+      client.close(); 
+    });
 	
 Now run it (from within */usr/local/gtm/ewd*).  If everything is working properly, you should see:
 
     ubuntu@domU-12-31-39-09-B8-03:/usr/local/gtm/ewd$ node test1.js
-    M/DB:Mumps
-    5
-    04 October 2010
+    Build = Build 6 Beta; date=15 October 2010; zv=GT.M V5.4-000A Linux x86_64
 
 If this is what you get, then you have Node.js successfully communicating with your GT.M database.
 	
-## Running node-mdbm
+## Running node-mwire
 
 To use node-mdbm in your Node.js applications, you must add:
 
-        var mdbmif = require("node-mdbm");
-		
-Then create a new instance of the node-mdbm client object:
-
-      var mdbm = new mdbmif.Client({
-         mdbId:'<yourId>',
-         mdbSecret:'<your secret key>',
-         endPoint: '127.0.0.1'
-      });
+         var redis = require("redis-node");
+         var client = redis.createClient(6330, '127.0.0.1');
+         require("mwire").addCommands(client);
 	
-You must specify a valid M/DB User ID and Secret Key.  Use the values you put in the MDB.conf file when you initialised M/DB.  (*If you using a self-contained M/DB Appliance-based system, the endPoint should be 127.0.0.1, but you can access a remote GT.M system from Node.js by specifying its IP Address or Domain Name.  Note that in order to access a remote GT.M system using node-mdbm you must install M/DB, M/DB:Mumps and EWD on the GT.M system*)
+By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.
 	
-Now you can use any of the node-mdbm APIs.
+(*If you are using a self-contained M/DB Appliance-based system, the host should be 127.0.0.1, but you can access a remote GT.M system from Node.js by specifying its IP Address or Domain Name.  Note that in order to access a remote GT.M system using node-mwire you must install the routines from the robtweed/mdb repository on the GT.M system*)
+	
+Now you can use any of the node-mwire APIs.
 
 
 ## APIs
 
-- set       (sets a Global node, using the specified subscripts and data value)
-- get       (gets a Global node, using the specified subscripts)
+- setGlobal (sets a Global node, using the specified subscripts and data value)
+- getGlobal (gets a Global node, using the specified subscripts)
 - setJSON   (maps a JSON object to a Global)
 - getJSON   (returns a JSON object from Global storage)
 - kill      (deletes a Global node, using the specified subscripts)
@@ -181,7 +114,7 @@ With the exception of *version*, the APIs follow the same pattern:
 
 ## Commands
 
-- mdbm.version(function(error, results) {});
+- client.version(function(error, results) {});
 
     Returns the current build number and date in the results object:
 	
@@ -189,7 +122,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	    results.Date = build date
 	
 	
-- mdbm.set(GlobalName, subscripts, value, function(error, results) {});
+- client.setGlobal(GlobalName, subscripts, value, function(error, results) {});
 	
 	Sets a Global node:
 	
@@ -202,7 +135,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
        results.ok = true
 
-- mdbm.get(GlobalName, subscripts, function(error, results) {});
+- client.getGlobal(GlobalName, subscripts, function(error, results) {});
 
 	Gets the value for a Global node:
 	
@@ -220,7 +153,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	   If the specified node exists, has lower-level subscripts has a data value, results.dataStatus = 11 and results.value = the value of the node
 	   If the specified node exists, has no lower-level subscripts and has a data value, results.dataStatus = 1 and results.value = the value of the node
 	   
-- mdbm.setJSON(GlobalName, subscripts, json, deleteBeforeSave, function(error, results) {});
+- client.setJSON(GlobalName, subscripts, json, deleteBeforeSave, function(error, results) {});
 
     Maps the specified JSON object and saves it into a Global node.  The JSON object can be saved into the top node of a Global, or merged under a specified subscript level within a Global.  Optionally you can clear down any existing data at the specified Global node.  The default is the new JSON object gets merged with existing data in the Global.
 	
@@ -234,7 +167,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
        results.ok = true
 	   
-- mdbm.getJSON(GlobalName, subscripts, function(error, results) {});
+- client.getJSON(GlobalName, subscripts, function(error, results) {});
 
     Gets the data stored at and under the specified Global node, and maps it to a JSON object before returning it.
 	
@@ -247,7 +180,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
        results = returned JSON object
 	   
-- mdbm.kill(GlobalName, subscripts, function(error, results) {});
+- client.kill(GlobalName, subscripts, function(error, results) {});
 	
 	Deletes a Global node and the sub-tree below it:
 	
@@ -259,12 +192,12 @@ With the exception of *version*, the APIs follow the same pattern:
 	
        results.ok = true
 	
-- mdbm.getGlobalList(function(error, results) {});
+- client.getGlobalList(function(error, results) {});
 
     Returns an array of Global Names in your database (ie results):
 
 	
-- mdbm.getNextSubscript(GlobalName, subscripts, function(error, results) {});
+- client.getNextSubscript(GlobalName, subscripts, function(error, results) {});
 	
 	Gets the next subscript value (if any) in collating sequence at the specified level of subscripting, following the last specified subscript:
 	
@@ -281,7 +214,7 @@ With the exception of *version*, the APIs follow the same pattern:
 					1  = data at the next subscripted node, but no child subscripts exist
 		results.dataValue = the value (if any) at the next subscript
 
-- mdbm.getPreviousSubscript(GlobalName, subscripts, function(error, results) {});
+- client.getPreviousSubscript(GlobalName, subscripts, function(error, results) {});
 	
 	Gets the previous subscript value (if any) in collating sequence at the specified level of subscripting, preceding the last specified subscript:
 	
@@ -298,7 +231,7 @@ With the exception of *version*, the APIs follow the same pattern:
 					1  = data at the previous subscripted node, but no child subscripts exist
 		results.dataValue = the value (if any) at the previous subscript
 
-- mdbm.getAllSubscripts(GlobalName, subscripts, function(error, results) {});
+- client.getAllSubscripts(GlobalName, subscripts, function(error, results) {});
 	
 	Gets all the values of the subscripts that exist below the specified subscript(s):
 	
@@ -311,7 +244,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
 	    results = array of all subscripts found immediately below the specified Global node.
 
-- mdbm.increment(GlobalName, subscripts, delta, function(error, results) {});
+- client.increment(GlobalName, subscripts, delta, function(error, results) {});
 	
 	Atomically increments the speficied Global node by the specified amount.  If the node does not exist, it is created and its initial value is assumed to be zero:
 	
@@ -324,7 +257,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
 	    results.value = the new value of the incremented node
 
-- mdbm.decrement(GlobalName, subscripts, delta, function(error, results) {});
+- client.decrement(GlobalName, subscripts, delta, function(error, results) {});
 	
 	Atomically decrements the speficied Global node by the specified amount.  If the node does not exist, it is created and its initial value is assumed to be zero:
 	
@@ -337,7 +270,7 @@ With the exception of *version*, the APIs follow the same pattern:
 	
 	    results.value = the new value of the decremented node
 
-- mdbm.transaction(json, function(error, results) {});
+- client.transaction(json, function(error, results) {});
 	
 	Invokes a sequence of actions within the back-end GT.M or Cach&#233; system.  These actions are applied in strict sequence and constitute a transaction.
 	
@@ -388,116 +321,47 @@ and then retrieve the value again (note the asynchronous nature of Node.js will
 not guarantee the order in which the APIs below are executed in the GT.M or Cach&#233; back-end)
 
 
-    var mdbmif = require("node-mdbm");
-    
-    var mdbm = new mdbmif.Client({
-       mdbId:'<your Id>',
-       mdbSecret:'<your secret key>',
-       endPoint: '127.0.0.1'
+    var redis = require("redis-node");
+    var client = redis.createClient(6330, '127.0.0.1');
+    require("mwire").addCommands(client);
+	
+    client.setGlobal('mdbmTest', ["check","this","out"], "Too cool!",
+       function(err, results) {
+          if (err) throw err;
+          console.log("setGlobal: " + results.ok);
     });
-    mdbm.set('mdbmTest', ["check","this","out"], "Too cool!",
-       function(error, results) {
-             if (error) { 
-                console.log('Error: ' + error + "\n");
-                console.log(results.ErrorCode + ": " + results.ErrorMessage + "\n");
-             }
-             else {
-               console.log(results.ok + "\n");
-             }
-       }
-    );
-    mdbm.get('mdbmTest', ["check","this","out"],
-       function(error, results) {
-             if (error) {
-                console.log('Error: ' + error + "\n");
-                console.log(results.ErrorCode + ": " + results.ErrorMessage + "\n");
-             }
-             else {
-               console.log("dataStatus=" + results.dataStatus + "\nvalue=" + results.value + "\n");
-             }
-       }
-    );
+	
+    client.getGlobal('mdbmTest', ["check","this","out"],
+       function(err, results) {
+          if (err) throw err;
+          console.log("getGlobal: " + results.value);
+          client.close();
+    });
 
 Note: this Global node could also have been created using SetJSON:
 
     var json = {"check":{"this":{"out":"Too cool!"}}};
-    mdbm.setJSON('mdbmTest', '', json, true,
-       function(error, results) {
-             if (error) { 
-                console.log('Error: ' + error + "\n");
-                console.log(results.ErrorCode + ": " + results.ErrorMessage + "\n"); 
-             }
-             else {
-               console.log(results.ok);
-             }
-       }
-    );
+    client.setJSON('mdbmTest', '', json, true,
+       function(err, results) {
+          if (err) throw err;
+          console.log("setJSON: " + results.ok);
+          client.close();
+     });
  
 and the original JSON could be retrieved using:
 
-    mdbm.getJSON('mdbmTest','',
-       function(error, results) {
-          if (error) { 
-             console.log('Error: ' + error + "\n"); 
-             console.log(results.ErrorCode + ": " + results.ErrorMessage + "\n"); 
-          }
-          else {
-            console.log(JSON.stringify(results));
-          }
-       }
-    );
+    client.getJSON('mdbmTest', '',
+       function(err, json) {
+          if (err) throw err;
+          console.log("getJSON: " + JSON.stringify(json));
+          client.close();
+     });
 	
-## Using node-mdbm with Cach&#233;
+## Using node-mwire with Cach&#233;
 
-The node-mdbm client can be used with a Cach&#233; database, and both WebLink and CSP are supported.  
+The node-mdbm client can be used with a Cach&#233; database
 
-You need to install Node.js and the node-mdbm client as described earlier, but on the Cache back-end system, you need to do the following:
-
-- install EWD for Cach&#233; (build 827 or later): [http://www.mgateway.com/ewd.html](http://www.mgateway.com/ewd.html)
-
-- download the M/DB files from the **robtweed/mdb** repository (*http://github.com:robtweed/mdb.git*)
-
-- you'll find a directory named */cache* in the **robtweed/mdb** repository and inside it is a file named **mdb.ro**.  Use %RI or equivalent to install the MDB routines that it contains into your working namespace (eg USER)
-
-- Run the following commands in a Cach&#233; terminal window (in your working namespace, eg USER):
-
-      s key="<your M/DB user ID>"
-	  s secret="<your M/DB secret key>"
-      s ok=$$createAdministrator^MDBConfig(key,secret)
-      s ok=$$reset^MDBConfig(key,secret)
-
-Note: replace the bits above in angled brackets with the values you want to use as your M/DB user ID and secret key
-
-- Set up the dispatch mapping table for M/DB:Mumps:
-
-          d install^MDBMumps
-
-- If you're going to use WebLink, define the dispatch routine mapping:
-
-          s ^MGWAPP("mdb")="response^MDB"
-
-- If you're going to use CSP, have a look in the **robtweed/mdb** repository and you'll find a directory named */csp*.  Inside this you'll find a file named **mdbm.csp**.  Copy this to a convenient CSP application path, eg */csp/ewd*  You may also need to edit the line *baseUri+1* in the routine *MDBMCache* to match the path you've used for this CSP page.  You may need to set up/modify the CSP application parameters for the path you've used.
-
-- You should be ready to try it out.  If you're using WebLink, you'll need to modify the parameters at the start of your Javascript file(s), specifically the *endPoint*, *baseUri* and the *webLink* properties, eg:
-
-        var mdbm = new mdbmif.Client({
-            mdbId:'<your M/DB user ID>',
-            mdbSecret:'<Your M/DB secret key>',
-            endPoint: '192.168.1.106',
-            baseUri: '/scripts/mgwms32.dll',
-            webLink: {MGWLPN:"LOCAL",MGWAPP:"mdb"}
-		};
-
-If you're using CSP, this section should look like the following:
-
-        var mdbm = new mdbmif.Client({
-            mdbId:'<your M/DB user ID>',
-            mdbSecret:'<Your M/DB secret key>',
-            endPoint: '192.168.1.106',
-            baseUri: '/csp/ewd/mdbm.csp'
-        });
-
-Note: The *baseUri* path should be appropriate to where you put the *mdbm.csp* page on your Cach&#233; system.
+Instructions to follow
 	
 		
 
