@@ -1,15 +1,15 @@
 { "name" : "node-mdbm"
-, "description" : "Client for accessing GT.M and Cache Globals (via secured HTTP)"
-, "version" : "0.0.8"
+, "description" : "Extension to redis-node client for accessing GT.M and Cache Globals (via M/Wire interface)"
+, "version" : "0.0.1"
 , "author" : "Rob Tweed <rtweed@mgateway.com>"
 , "repository" :
   { "type" : "git"
-  , "url" : "git://github.com/robtweed/node-mdbm.git"
+  , "url" : "git://github.com/robtweed/node-mwire.git"
   }
-, "bugs" : { "web" : "http://github.com/robtweed/node-mdbm/issues" }
+, "bugs" : { "web" : "http://github.com/robtweed/node-mwire/issues" }
 , "os" : [ "linux", "darwin" ]
 , "directories" : { "lib" : "./lib/" }
-, "main" : "./lib/mdbMumpsClient"
+, "main" : "./lib/mwire"
 , "engines" : { "node" : ">=0.2.2" }
 , "dependencies" : {}
 , "licenses": [ "MIT" ]

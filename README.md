@@ -1,6 +1,6 @@
 # node-mwire
  
-node.js client for accessing GT.M and Cach&#233; Globals (via adapted Redis wire protocol)
+Extension to redis-node, for accessing GT.M and Cach&#233; Globals (via M/Wire interface)
 
 Thanks to Brian Noguchi for advice on extending his redis-node client
 
@@ -359,7 +359,7 @@ and the original JSON could be retrieved using:
 	
 ## Using node-mwire with Cach&#233;
 
-The node-mdbm client can be used with a Cach&#233; database
+The node-mwire client can be used with a Cach&#233; database
 
 Instructions to follow
 	
