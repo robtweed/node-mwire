@@ -1,4 +1,4 @@
-{ "name" : "node-mdbm"
+{ "name" : "node-mwire"
 , "description" : "Extension to redis-node client for accessing GT.M and Cache Globals (via M/Wire interface)"
 , "version" : "0.0.1"
 , "author" : "Rob Tweed <rtweed@mgateway.com>"
