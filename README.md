@@ -108,7 +108,7 @@ Now you can use any of the node-mwire APIs.
 - decrement (Atomically decrements a Global node, using the specified subscripts)
 - remoteFunction   (Execute a function within the GT.M or Cach&#233; system and return the response)
 - transaction   (Execute a sequence of Global manipulations in strict order, specified as an array of setJSON and kill JSON documents.)
-- version   (returns the M/DB:Mumps build number and date)
+- version   (returns the M/Wire build number and date)
 
 With the exception of *version*, the APIs follow the same pattern:
 
@@ -361,9 +361,37 @@ and the original JSON could be retrieved using:
 
 The node-mwire client can be used with a Cach&#233; database
 
-Instructions to follow
+On the client system you need to install *Node.js*, the *redis-node* client and the *node-mwire* extension as described earlier.
+
+On the Cache back-end system, you need to do the following:
+
+- install EWD for Cach&#233; (build 827 or later): [http://www.mgateway.com/ewd.html](http://www.mgateway.com/ewd.html)
+
+- download the M/DB and M/Wire files from the **robtweed/mdb** repository (*http://github.com:robtweed/mdb.git*)
+
+- you'll find a directory named */cache* in the **robtweed/mdb** repository and inside it is a file named **mdb.xml**.  Use $system.OBJ.Load(filePath) to install the M/DB and M/Wire routines that it contains into your working namespace (eg USER)
 	
-		
+By default, M/Wire will run on port 6330.  On Cache systems, remote access to the M/Wire protocol is controlled by a daemon process.  To start this:
+
+     job start^zmwireDaemon
+	 
+You can now access the Cach&#233; system from Node.js, eg:
+
+    var redis = require("redis-node");
+    var client = redis.createClient(6330, '192.168.1.105');
+    require("mwire").addCommands(client);
+	
+    client.version(function (err, json) {
+      if (err) throw err;
+       console.log("Build = " + json.Build + "; date=" + json.Date + "; zv=" + json.Host);
+      client.close(); 
+    });
+
+You should see something like:
+
+      {"Build":"Build 6 Beta","Date":"15 October 2010","Host":"Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST"}
+
+	
 
 ## License
 
