@@ -30,6 +30,9 @@ GT.M is a particularly attractive option as it is available as a Free Open Sourc
 
 I've developed *node-mwire* to make it possible for the growing Node.js community to benefit from the great flexibility and performance that these Global-based databases provide. The combination of Node.js and Globals is truly remarkable, and I'm hoping node-mwire will result in them becoming much better known for NoSQL database storage.
 
+*node-mwire* is one of two Node.js clients available for GT.M and Cach&#233;.  It uses an adaptation of the Redis wire protocol and is implemented as an extension to Brian Noguchi's high-performance *redis-node* client. 
+
+An alternative client, node-mdbm, which uses an adaptation of the HTTP-based SimpleDB protocol, is also available.
 
 ##  Installing the Global-based back-end System
 
@@ -39,27 +42,31 @@ In order to use *node-mwire* you'll need to have a have a Cach&#233; system or a
 
 I've provided specific instructions for Cach&#233; at the end of this README file.  If you'd prefer to use the Free Open Source GT.M database, read on:
 
-The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  You can optionally also use his Node.js installer to add Node.js, redis-node and node-mwire to the same server.  Node.js and node-mwire can reside on the same server as GT.M or on a different server, but Mike's installer is a quick and painless way to get a complete test environment up and running on the one server.
+The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  Node.js and *node-mwire* can reside on the same server as GT.M or on a different server.  Mike has also created an installer that will add Node.js and our node-mbdm and node-mwire modules, to create a complete front-end and back-end environment on a single server: ideal for testing and evaluation.
+
+The instructions below assume you'll be installing Node.js and *node-wire* on the same server.
 
 You can apply Mike's installer to a Ubuntu Linux system running on your own hardware, or running as a virtual machine.  However, I find Amazon EC2 servers to be ideal for trying this kind of stuff out.  I've tested it with both Ubuntu 10.4 and 10.10.
 
 So, for example, to create an M/DB Appliance using Amazon EC2:
 
-- Start up a Ubuntu Lucid (10.04) instance, eg use ami-6c06f305
+- Start up a Ubuntu Lucid (10.10) instance, eg use ami-508c7839 for a 32-bit server version
 - Now follow the instructions for installing the M/DB Appliance at [http://gradvs1.mgateway.com/main/index.html?path=mdb/mdbDownload](http://gradvs1.mgateway.com/main/index.html?path=mdb/mdbDownload)
 
-Now install Node.js, node-mdbm, redis-node and node-mwire:
+If you point a browser at the domain name/IP address assigned to the Ubuntu machine, you should now get the M/DB welcome screen.  If you're going to just use the *node-mwire* client, you don't need to initialise the M/DB server.
 
+If you want to make a completely self-contained test system that also includes Node.js and *node-mwire*, then continue as follows:
+	      
       cd /tmp
       wget http://michaelgclayton.s3.amazonaws.com/mgwtools/node-mdbm-1.10_all.deb (Fetch the installer file)
-      sudo node-mdbm-1.10_all.deb (Ignore the errors that will be reported)
+      sudo dpkg -i node-mdbm-1.10_all.deb (Ignore the errors that will be reported)
       sudo apt-get -f install (and type y when asked)
 	  
-Note - the Node.js build process can take quite a long time and is very verbose.
+Note - the Node.js build process can take quite a long time and is very verbose, so be patient!
 	
-OK! That's it all installed. You should now be ready to try out node-mwire!
+OK! That's it all installed. You should now be ready to try out *node-mwire*!
 
-## Testing node-mdbm
+## Testing node-mwire
 
 If you used Mike Clayton's installers as described above:
 
@@ -67,7 +74,7 @@ If you used Mike Clayton's installers as described above:
   
     var redis = require("redis-node");
     var client = redis.createClient(6330);
-    require("mwire").addCommands(client);
+    require("node-mwire").addCommands(client);
 	
     client.version(function (err, json) {
       if (err) throw err;
@@ -88,7 +95,7 @@ To use node-mdbm in your Node.js applications, you must add:
 
          var redis = require("redis-node");
          var client = redis.createClient(6330, '127.0.0.1');
-         require("mwire").addCommands(client);
+         require("node-mwire").addCommands(client);
 	
 By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.
 	
@@ -113,8 +120,6 @@ Now you can use any of the node-mwire APIs.
 - remoteFunction   (Execute a function within the GT.M or Cach&#233; system and return the response)
 - transaction   (Execute a sequence of Global manipulations in strict order, specified as an array of setJSON and kill JSON documents.)
 - version   (returns the M/Wire build number and date)
-
-With the exception of *version*, the APIs follow the same pattern:
 
 ## Commands
 
@@ -327,7 +332,7 @@ not guarantee the order in which the APIs below are executed in the GT.M or Cach
 
     var redis = require("redis-node");
     var client = redis.createClient(6330, '127.0.0.1');
-    require("mwire").addCommands(client);
+    require("node-mwire").addCommands(client);
 	
     client.setGlobal('mdbmTest', ["check","this","out"], "Too cool!",
        function(err, results) {
@@ -365,7 +370,7 @@ and the original JSON could be retrieved using:
 
 The node-mwire client can be used with a Cach&#233; database
 
-On the client system you need to install *Node.js*, the *redis-node* client and the *node-mwire* extension as described earlier.
+On the client system you need to install *Node.js*, the *redis-node* client and the *node-mwire* extension.
 
 On the Cach&#233; back-end system, you need to do the following:
 
@@ -383,7 +388,7 @@ You can now access the Cach&#233; system from Node.js, eg:
 
     var redis = require("redis-node");
     var client = redis.createClient(6330, '192.168.1.105');
-    require("mwire").addCommands(client);
+    require("node-mwire").addCommands(client);
 	
     client.version(function (err, json) {
       if (err) throw err;
@@ -396,11 +401,9 @@ You should see something like:
       Build = Build 6 Beta; date=15 October 2010; zv=Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST
 
 
-	
-
 ## License
 
-Copyright (c) 2004-10 M/Gateway Developments Ltd,
+Copyright (c) 2010 M/Gateway Developments Ltd,
 Reigate, Surrey UK.
 All rights reserved.
 
