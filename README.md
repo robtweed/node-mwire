@@ -58,8 +58,8 @@ If you point a browser at the domain name/IP address assigned to the Ubuntu mach
 If you want to make a completely self-contained test system that also includes Node.js and *node-mwire*, then continue as follows:
 	      
       cd /tmp
-      wget http://michaelgclayton.s3.amazonaws.com/mgwtools/node-mdbm-1.10_all.deb (Fetch the installer file)
-      sudo dpkg -i node-mdbm-1.10_all.deb (Ignore the errors that will be reported)
+      wget http://michaelgclayton.s3.amazonaws.com/mgwtools/node-mdbm-1.11_all.deb (Fetch the installer file)
+      sudo dpkg -i node-mdbm-1.11_all.deb (Ignore the errors that will be reported)
       sudo apt-get -f install (and type y when asked)
 	  
 Note - the Node.js build process can take quite a long time and is very verbose, so be patient!
@@ -72,20 +72,18 @@ If you used Mike Clayton's installers as described above:
 
   In */usr/local/gtm/ewd* create a file named *test1.js* containing:
   
-    var redis = require("redis-node");
-    var client = redis.createClient(6330);
-    require("node-mwire").addCommands(client);
-	
-    client.version(function (err, json) {
-      if (err) throw err;
-       console.log("Build = " + json.Build + "; date=" + json.Date + "; zv=" + json.Host);
-      client.close(); 
+    var mwireLib = require("node-mwire");
+    var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:6});
+
+     mwire.clientPool[mwire.connection()].version(function (error, json) {
+        if (error) throw error;
+        console.log("Build = " + json.Build + "; date=" + json.Date + "; zv=" + json.Host);
     });
 	
 Now run it (from within */usr/local/gtm/ewd*).  If everything is working properly, you should see:
 
     ubuntu@domU-12-31-39-09-B8-03:/usr/local/gtm/ewd$ node test1.js
-    Build = Build 6 Beta; date=15 October 2010; zv=GT.M V5.4-000A Linux x86_64
+    Build = Build 9; date=07 November 2010; zv=GT.M V5.4-001 Linux x86
 
 If this is what you get, then you have Node.js successfully communicating with your GT.M database.
 	
@@ -93,14 +91,17 @@ If this is what you get, then you have Node.js successfully communicating with y
 
 To use node-mdbm in your Node.js applications, you must add:
 
-         var redis = require("redis-node");
-         var client = redis.createClient(6330, '127.0.0.1');
-         require("node-mwire").addCommands(client);
+        var mwireLib = require("node-mwire");
+        var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:5});
 	
-By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.
+By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.  If you don't specify a poolSize, a pool of 5 connections will be created and used.
 	
 (*If you are using a self-contained M/DB Appliance-based system, the host should be 127.0.0.1, but you can access a remote GT.M system from Node.js by specifying its IP Address or Domain Name.  Note that in order to access a remote GT.M system using node-mwire you must install the routines from the robtweed/mdb repository on the GT.M system*)
-	
+
+When executing an M/Wire API commands, you must select a connection.  The simplest approach is to use one of the available ones in the pool at random using:
+
+		mwire.clientPool[mwire.connection()].command();
+
 Now you can use any of the node-mwire APIs.
 
 
@@ -123,7 +124,9 @@ Now you can use any of the node-mwire APIs.
 
 ## Commands
 
-- client.version(function(error, results) {});
+( substitute *client.* with *mwire.clientPool[mwire.connection()]* )
+
+- client.*version*(function(error, results) {});
 
     Returns the current build number and date in the results object:
 	
@@ -131,7 +134,7 @@ Now you can use any of the node-mwire APIs.
 	    results.Date = build date
 	
 	
-- client.setGlobal(GlobalName, subscripts, value, function(error, results) {});
+- client.*setGlobal*(GlobalName, subscripts, value, function(error, results) {});
 	
 	Sets a Global node:
 	
@@ -330,40 +333,36 @@ and then retrieve the value again (note the asynchronous nature of Node.js will
 not guarantee the order in which the APIs below are executed in the GT.M or Cach&#233; back-end)
 
 
-    var redis = require("redis-node");
-    var client = redis.createClient(6330, '127.0.0.1');
-    require("node-mwire").addCommands(client);
+    var mwireLib = require("node-mwire");
+    var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1'});
 	
-    client.setGlobal('mdbmTest', ["check","this","out"], "Too cool!",
+    mwire.clientPool[mwire.connection()].setGlobal('mdbmTest', ["check","this","out"], "Too cool!",
        function(err, results) {
           if (err) throw err;
           console.log("setGlobal: " + results.ok);
     });
 	
-    client.getGlobal('mdbmTest', ["check","this","out"],
+    mwire.clientPool[mwire.connection()].getGlobal('mdbmTest', ["check","this","out"],
        function(err, results) {
           if (err) throw err;
           console.log("getGlobal: " + results.value);
-          client.close();
     });
 
 Note: this Global node could also have been created using SetJSON:
 
     var json = {"check":{"this":{"out":"Too cool!"}}};
-    client.setJSON('mdbmTest', '', json, true,
+    mwire.clientPool[mwire.connection()].setJSON('mdbmTest', '', json, true,
        function(err, results) {
           if (err) throw err;
           console.log("setJSON: " + results.ok);
-          client.close();
      });
  
 and the original JSON could be retrieved using:
 
-    client.getJSON('mdbmTest', '',
+    mwire.clientPool[mwire.connection()].getJSON('mdbmTest', '',
        function(err, json) {
           if (err) throw err;
           console.log("getJSON: " + JSON.stringify(json));
-          client.close();
      });
 	
 ## Using node-mwire with Cach&#233;
@@ -386,19 +385,17 @@ By default, M/Wire will run on port 6330.  On Cach&#233; systems, remote access 
 	 
 You can now access the Cach&#233; system from Node.js, eg:
 
-    var redis = require("redis-node");
-    var client = redis.createClient(6330, '192.168.1.105');
-    require("node-mwire").addCommands(client);
-	
-    client.version(function (err, json) {
+     var mwireLib = require("node-mwire");
+     var mwire = new mwireLib.Client({port:6330, host: '192.168.1.105'});
+
+    mwire.clientPool[mwire.connection()].version(function (err, json) {
       if (err) throw err;
        console.log("Build = " + json.Build + "; date=" + json.Date + "; zv=" + json.Host);
-      client.close(); 
     });
 
 You should see something like:
 
-      Build = Build 6 Beta; date=15 October 2010; zv=Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST
+      Build = Build 9; date=07 November 2010; zv=Cache for Windows (x86-32) 2008.2.1 (Build 902) Thu Jan 22 2009 13:50:37 EST
 
 
 ## License
