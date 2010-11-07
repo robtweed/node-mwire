@@ -50,7 +50,7 @@ You can apply Mike's installer to a Ubuntu Linux system running on your own hard
 
 So, for example, to create an M/DB Appliance using Amazon EC2:
 
-- Start up a Ubuntu Lucid (10.10) instance, eg use ami-508c7839 for a 32-bit server version
+- Start up a Ubuntu Lucid (10.10) instance, eg use ami-508c7839 for a 32-bit server version, or ami-548c783d for a 64-bit server version.
 
 **32-bit Ubuntu:**
 
