@@ -57,11 +57,11 @@ So, for example, to create an M/DB Appliance using Amazon EC2:
 - Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username ubuntu
 sudo apt-get update
 
-     cd /tmp
-     wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_i386.deb
-     sudo dpkg -i mgwtools-1.11_i386.deb (Ignore the errors that will be reported)
-     sudo apt-get -f install (and type y when asked)
-     rm mgwtools-1.11_i386.deb
+        cd /tmp
+        wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_i386.deb
+        sudo dpkg -i mgwtools-1.11_i386.deb (Ignore the errors that will be reported)
+        sudo apt-get -f install (and type y when asked)
+        rm mgwtools-1.11_i386.deb
 	 
 	 
 **64-bit Ubuntu:**
@@ -69,11 +69,11 @@ sudo apt-get update
 - Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username ubuntu
 sudo apt-get update
 
-     cd /tmp
-     wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_amd64.deb
-     sudo dpkg -i mgwtools-1.11_amd64.deb (Ignore the errors that will be reported)
-     sudo apt-get -f install (and type y when asked)
-     rm mgwtools-1.11_amd64.deb
+        cd /tmp
+        wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_amd64.deb
+        sudo dpkg -i mgwtools-1.11_amd64.deb (Ignore the errors that will be reported)
+        sudo apt-get -f install (and type y when asked)
+        rm mgwtools-1.11_amd64.deb
 
 If you point a browser at the domain name/IP address assigned to the Ubuntu machine, you should now get the M/DB welcome screen.  If you're going to just use the *node-mwire* client, you don't need to initialise the M/DB server.
 
