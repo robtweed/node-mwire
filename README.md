@@ -95,7 +95,7 @@ If you used Mike Clayton's installers as described above:
   In */usr/local/gtm/ewd* create a file named *test1.js* containing:
   
     var mwireLib = require("node-mwire");
-    var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:6});
+    var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1'});
 
      mwire.clientPool[mwire.connection()].version(function (error, json) {
         if (error) throw error;
@@ -114,9 +114,9 @@ If this is what you get, then you have Node.js successfully communicating with y
 To use node-mdbm in your Node.js applications, you must add:
 
         var mwireLib = require("node-mwire");
-        var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:5});
+        var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:4);
 	
-By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.  If you don't specify a poolSize, a pool of 5 connections will be created and used.
+By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.  If you don't specify a poolSize, a pool of 5 connections will be created and used.  Initial testing suggests that the optimum poolSize value is quite low - betwen 4 and 6. Performance appears to be adversely affected if you use too large a connection pool, so experimentation is recommended.  For most lightly-loaded systems, the default poolSize of 5 is probably quite satisfactory.
 	
 (*If you are using a self-contained M/DB Appliance-based system, the host should be 127.0.0.1, but you can access a remote GT.M system from Node.js by specifying its IP Address or Domain Name.  Note that in order to access a remote GT.M system using node-mwire you must install the routines from the robtweed/mdb repository on the GT.M system*)
 
