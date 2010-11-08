@@ -54,9 +54,9 @@ So, for example, to create an M/DB Appliance using Amazon EC2:
 
 **32-bit Ubuntu:**
 
-- Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username ubuntu
-sudo apt-get update
+- Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username *ubuntu*
 
+        sudo apt-get update
         cd /tmp
         wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_i386.deb
         sudo dpkg -i mgwtools-1.11_i386.deb (Ignore the errors that will be reported)
@@ -66,9 +66,9 @@ sudo apt-get update
 	 
 **64-bit Ubuntu:**
 
-- Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username ubuntu
-sudo apt-get update
+- Log in to your Ubuntu system and start a terminal session. If you've started a Ubuntu 10.4 or 10.10 EC2 AMI, log in with the username *ubuntu*
 
+        sudo apt-get update
         cd /tmp
         wget http://michaelgclayton.s3.amazonaws.com/mgwtools/mgwtools-1.11_amd64.deb
         sudo dpkg -i mgwtools-1.11_amd64.deb (Ignore the errors that will be reported)
