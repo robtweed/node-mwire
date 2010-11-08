@@ -114,15 +114,20 @@ If this is what you get, then you have Node.js successfully communicating with y
 To use node-mdbm in your Node.js applications, you must add:
 
         var mwireLib = require("node-mwire");
-        var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:4);
+        var mwire = new mwireLib.Client({port:6330, host: '127.0.0.1', poolSize:4});
 	
 By default, the back-end M/Wire routines in GT.M and/or Cach&#233; listen on port 6330.  If you don't specify a poolSize, a pool of 5 connections will be created and used.  Initial testing suggests that the optimum poolSize value is quite low - betwen 4 and 6. Performance appears to be adversely affected if you use too large a connection pool, so experimentation is recommended.  For most lightly-loaded systems, the default poolSize of 5 is probably quite satisfactory.
+
+For a default setup that connects to GT.M and/or Cach&#233; using port 6330, localhost (127.0.0.1) with a poolSize of 5, you can simply replace the lines above with:
+
+        var mwireLib = require("node-mwire");
+        var mwire = new mwireLib.Client();
 	
-(*If you are using a self-contained M/DB Appliance-based system, the host should be 127.0.0.1, but you can access a remote GT.M system from Node.js by specifying its IP Address or Domain Name.  Note that in order to access a remote GT.M system using node-mwire you must install the routines from the robtweed/mdb repository on the GT.M system*)
+(*If you are using a self-contained M/DB Appliance-based system, the host will normally be 127.0.0.1, but you can access a remote GT.M or Cach&#233; system from Node.js by specifying the IP Address or Domain Name of the GT.M or Cach&#233; machine.  Note that in order to access a remote GT.M or Cach&#233; system using node-mwire you must install the routines from the robtweed/mdb repository on the GT.M system*)
 
 When executing an M/Wire API commands, you must select a connection.  The simplest approach is to use one of the available ones in the pool at random using:
 
-		mwire.clientPool[mwire.connection()].command();
+		mwire.clientPool[mwire.connection()].<command>();
 
 Now you can use any of the node-mwire APIs.
 
