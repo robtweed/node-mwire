@@ -32,7 +32,7 @@ I've developed *node-mwire* to make it possible for the growing Node.js communit
 
 *node-mwire* is one of two Node.js clients available for GT.M and Cach&#233;.  It uses an adaptation of the Redis wire protocol and is implemented as an extension to Brian Noguchi's high-performance *redis-node* client. 
 
-An alternative client, node-mdbm, which uses an adaptation of the HTTP-based SimpleDB protocol, is also available.
+One application of *node-mwire* is to provide an HTTP server log (ie the equivalent of Apache or IIS's server log).  *node-mwire* includes an automated HTTP Server log function that saves the full available details of each incoming HTTP request as a persistent JSON document, storing each request document in a GT.M or Cach&#233; database.  Full details are towards the bottom of this ReadMe document.
 
 ##  Installing the Global-based back-end System
 
