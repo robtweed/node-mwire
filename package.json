@@ -1,6 +1,6 @@
 { "name" : "node-mwire"
 , "description" : "Extension to redis-node client for accessing GT.M and Cache Globals (via M/Wire interface)"
-, "version" : "0.0.6"
+, "version" : "0.0.7"
 , "author" : "Rob Tweed <rtweed@mgateway.com>"
 , "repository" :
   { "type" : "git"

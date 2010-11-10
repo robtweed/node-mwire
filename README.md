@@ -149,6 +149,8 @@ Now you can use any of the node-mwire APIs.
 - transaction   (Execute a sequence of Global manipulations in strict order, specified as an array of setJSON and kill JSON documents.)
 - version   (returns the M/Wire build number and date)
 
+- onNext  (built-in event emitter that supports sequential processing of Global nodes by subscript)
+
 ## Commands
 
 ( substitute *client.* with *mwire.clientPool[mwire.connection()]* )
@@ -336,7 +338,7 @@ Now you can use any of the node-mwire APIs.
 
 	In the example above, the actions are invoked in the GT.M or Cach&#233; back-end in strict sequence according to their position in the *json* array, ie *action1*, followed by *action 2*.  The transaction details are sent as a single request to the back-end from Node.js and the invocation of the commands that make up the transaction occurs entirely within the back-end system.  As a result, the Node.js thread is not blocked.  The call-back function is invoked only when the entire transaction has completed at the back-end.
 		
-- mdbm.remoteFunction(functionName, parameters, function(error, results) {});
+- client.remoteFunction(functionName, parameters, function(error, results) {});
 	
 	Execute a native GTM or Cach&#233; function.  This is usually for legacy applications:
 	
@@ -347,6 +349,34 @@ Now you can use any of the node-mwire APIs.
 	Returns:
 	
 	    results.value = the response/result returned by the remote function
+		
+- mwire.onNext(GlobalName, subscripts, callback)
+		
+	This is an event emitter wrapper around the *getNextSubscript* command that can be used to invoke a specified callback for each successive subscript found by the *getNextSubscript* command.
+	
+	GlobalName = name of Global (literal)  
+	subscripts = array specifying the subscripts ('' if the first 1st subscript is to be returned)
+	    eg ["a","b","c"]  will return the value of the 3rd subscript the follows the value "c" where subscript1 = "a" and subscript2 = "b"
+	callback = the name of the callback function to invoke.
+	
+	For example, suppose you have a Global: ^nwd("session",sessionId)=someData
+
+	To apply some processing to every sessionId node in this global, first fire a callback for the first sessionId in the global:
+	
+		mwire.onNext("nwd", ["session", ""], processSession);
+
+	The *processSession* callback would look something like the following:
+	
+		var processSession = function(error, results) {
+		   var sessionId = results.subscriptValue;
+		   if (sessionId != '') {
+		      // process the Global Node here...
+			  mwire.onNext("nwd", ["session", sessionId], processSession);
+		   }
+		};
+	
+	*mwire.onNext* will emit a new "getNext" event for each sessionId found in the global, and will stop when no more subscript values are found.
+	
 		
 ## Examples
 
@@ -392,6 +422,74 @@ and the original JSON could be retrieved using:
           console.log("getJSON: " + JSON.stringify(json));
      });
 	
+## HTTP Server Logging
+
+*node-mwire* includes an HTTP server log mechanism, allowing you to store in a GT.M or Cach&#233; database the complete details of every incoming HTTP request to your Node.js web server (ie the equivalent of Apache's log file, but saved in JSON format).
+
+To use this facility, simply install node-mwire, install and configure a GT.M or Cach&#233; database and add the following *requires* at the top of your web server code:
+
+		var mwireLib = require("node-mwire");
+		var mwire = new mwireLib.Client({port:6330, host:'127.0.0.1'});
+
+[Modify the host and port paramaters if required]
+
+Then, add the following within your main web server logic:
+
+		mwire.httpLog(request);
+		
+eg:
+
+		http.createServer(function(request, response) {
+			var urlObj = url.parse(request.url); 
+			var uri = urlObj.pathname;
+			if (uri === '/favicon.ico') {
+				display404(response);
+				return;
+			}
+			mwire.httpLog(request);
+			//....etc
+		}).listen(8080); 
+
+		
+By default, up to 5 days' worth of logs will be maintained in the GT.M or Cach&#233; database.  A timed event kicks in automatically each hour to trim down the HTTP log Global.
+
+Each request is saved as an event record.  Here's a typical example of an event in the Global:
+
+		^nodeHTTPLog("log",214,"headers","accept")="application/xml,application/xhtml+xm
+				l,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
+		^nodeHTTPLog("log",214,"headers","accept-encoding")="gzip, deflate"
+		^nodeHTTPLog("log",214,"headers","accept-language")="en-us"
+		^nodeHTTPLog("log",214,"headers","cache-control")="max-age=0"
+		^nodeHTTPLog("log",214,"headers","connection")="keep-alive"
+		^nodeHTTPLog("log",214,"headers","host")="192.168.1.115:8080"
+		^nodeHTTPLog("log",214,"headers","user-agent")="Mozilla/5.0 (Macintosh; U; Intel
+				Mac OS X 10_6_4; en-us) AppleWebKit/533.18.1 (KHTML, like Gecko) Vers
+				ion/5.0.2 Safari/533.18.5"
+		^nodeHTTPLog("log",214,"httpVerion")=1.1
+		^nodeHTTPLog("log",214,"method")="GET"
+		^nodeHTTPLog("log",214,"remoteAddr")="192.168.1.100"
+		^nodeHTTPLog("log",214,"time")="Wed, 10 Nov 2010 13:07:44 GMT"
+		^nodeHTTPLog("log",214,"timeStamp")=1289394464293
+		^nodeHTTPLog("log",214,"url")="/ewd/testpage2/?a=1&b=2"
+
+You can change the number of days' worth of logs that will be maintained in this Global using the command:
+
+		mwire.setHttpLogDays(noOfDays);
+		
+		eg: 
+		
+		mwire.setHttpLogDays(7);
+		
+You can retrieve a logged event using the getJSON command, eg:
+
+		mwire.clientPool[mwire.connection()].getJSON('nodeHTTPLog', ["log", 214] ,
+			function(err, json) {
+				console.log("HTTP request event 214: " + JSON.stringify(json));
+				console.log("The browser used was " + json.headers["user-agent"]);
+				console.log("The request was from IP address " + json.remoteAddr);
+				});
+
+			
 ## Using node-mwire with Cach&#233;
 
 The node-mwire client can be used with a Cach&#233; database
