@@ -5,7 +5,7 @@ Extension to redis-node, for accessing GT.M and Cach&#233; Globals (via M/Wire i
 Thanks to Brian Noguchi for advice on extending his redis-node client
 
 Rob Tweed <rtweed@mgateway.com>  
-29 September 2010, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
+25 February 2011, M/Gateway Developments Ltd [http://www.mgateway.com](http://www.mgateway.com)  
 
 Twitter: @rtweed
 
