@@ -36,13 +36,25 @@ One application of *node-mwire* is to provide an HTTP server log (ie the equival
 
 ##  Installing the Global-based back-end System
 
+**Manual Installation:**
+
 In order to use *node-mwire* you'll need to have a have a Cach&#233; system or a Linux system with GT.M installed.  You'll also need to install the following on the GT.M or Cach&#233; system:
 
-- M/Wire routines (latest versions from the repository: *robtweed/mdb*)
+- M/Wire routines (make sure you get the latest versions from the repository: *https://github.com/robtweed/mdb*)
 
 I've provided specific instructions for Cach&#233; at the end of this README file.  If you'd prefer to use the Free Open Source GT.M database, read on:
 
-The easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  Node.js and *node-mwire* can reside on the same server as GT.M or on a different server.  Mike has also created an installer that will add Node.js and our node-mbdm and node-mwire modules, to create a complete front-end and back-end environment on a single server: ideal for testing and evaluation.
+To install and configure the M/Wire routines manually in GT.M, you need just 3 files from the *mdb* repository:
+
+       zmwire.m (the GT.M routine file that does the work)
+	   mwire and zmwire (the xinetd service files)
+	   
+The comments at the top of the zmwire.m file will tell you how to install and configure everything.  Ignore the paragraph on requiring 
+MGWSI and m_apache as you won't need these if you're just using *node-mwire*.
+
+**Using the M/DB Installer:**
+
+Alternatively, the easiest way to get a GT.M system going is to use Mike Clayton's *M/DB installer* for Ubuntu Linux which will create you a fully-working environment within a few minutes.  Node.js and *node-mwire* can reside on the same server as GT.M or on a different server.  Mike has also created an installer that will add Node.js and our node-mbdm and node-mwire modules, to create a complete front-end and back-end environment on a single server: ideal for testing and evaluation.
 
 The instructions below assume you'll be installing Node.js and *node-wire* on the same server.
 
@@ -142,11 +154,14 @@ Now you can use any of the node-mwire APIs.
 - getGlobalList  (returns an array of Global names that exist in your database)
 - getNextSubscript     (returns the next subscript at a specified level of Global subscripting)
 - getPreviousSubscript     (returns the next subscript at a specified level of Global subscripting)
+- getSubscripts  (returns an array containing subscript values within a specified range, below a specified level of subscripting)
 - getAllSubscripts  (returns an array containing all subscript values below a specified level of subscripting)
 - increment (Atomically increments a Global node, using the specified subscripts)
 - decrement (Atomically decrements a Global node, using the specified subscripts)
 - remoteFunction   (Execute a function within the GT.M or Cach&#233; system and return the response)
 - transaction   (Execute a sequence of Global manipulations in strict order, specified as an array of setJSON and kill JSON documents.)
+- backupGlobal   (Backs up an entire global to a specified text file path)
+- cloneGlobal   (Make a snapshot/clone of one Global subtree into another Global sub-tree)
 - version   (returns the M/Wire build number and date)
 
 - onNext  (built-in event emitter that supports sequential processing of Global nodes by subscript)
@@ -272,6 +287,20 @@ Now you can use any of the node-mwire APIs.
 					1  = data at the previous subscripted node, but no child subscripts exist
 		results.dataValue = the value (if any) at the previous subscript
 
+- client.getSubscripts(GlobalName, subscripts, , fromValue, toValue, function(error, results) {});
+	
+	Gets the values of subscripts within the specified range, that exist below the specified subscript(s):
+	
+	GlobalName = name of Global (literal)  
+	subscripts = array specifying the required subscripts ('' if all 1st subscript values are to be returned)
+	    eg ["a","b","c"]  will return an array of all subscripts that exist below this level of subscripting
+	fromValue  = starting value of range (inclusive)
+	toValue    = end value of range (inclusive)
+	
+	Returns:
+	
+	    results = array of subscripts within the range found immediately below the specified Global node.
+		
 - client.getAllSubscripts(GlobalName, subscripts, function(error, results) {});
 	
 	Gets all the values of the subscripts that exist below the specified subscript(s):
@@ -376,7 +405,39 @@ Now you can use any of the node-mwire APIs.
 		};
 	
 	*mwire.onNext* will emit a new "getNext" event for each sessionId found in the global, and will stop when no more subscript values are found.
+
+- client.cloneGlobal(fromGlobalName, fromSubscripts, , toGlobalName, toSubscripts, toClearDown, function(error, results) {});
 	
+	Makes a copy of an entire Global or specified sub-tree of a Global into another Global or Global sub-tree:
+	
+	fromGlobalName = name of Global to be cloned (literal)  
+	fromSubscripts = array specifying the required subscripts of the cloned Global
+	    eg ["a","b","c"]  will clone the Global sub-tree of nodes beneath these subscripts
+		   [] will clone the entire Global
+	toGlobalName = name of Global to hold the cloned copy (literal)  
+	toSubscripts = array specifying the subscripts of the toGlobal into which the fromGlobal will be copied
+	    eg ["a","b","c"]  will copy the cloned nodes beneath these subscripts of the toGlobal
+		   [] will copy the cloned nodes directly under the root node of the toGlobal
+	toClearDown  = true|false.  If true, the specified toGlobal subtree is cleared down before the cloning process begins
+	
+	Returns:
+	
+	    results = {ok:true} if the clone process completed successfully
+	
+- client.backupGlobal(GlobalName, Subscripts, , filePath, function(error, results) {});
+	
+	Makes a backup copy of an entire Global or specified sub-tree of a Global into a specified text file:
+	
+	GlobalName = name of Global to be backed up (literal)  
+	Subscripts = array specifying the required subscripts of the Global subtree to be backed up
+	    eg ["a","b","c"]  will backup the Global sub-tree of nodes beneath these subscripts
+		   [] will backup the entire Global
+	filePath  =  path of file into which the Global node references and data will be copied.  If the file does 
+	             not exist, it will be created.
+	
+	Returns:
+	
+	    results = {ok:true} if the backup process completed successfully
 		
 ## Examples
 
